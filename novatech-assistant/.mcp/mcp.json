@@ -1,0 +1,46 @@
+{
+  "_comment": "MCP servers do projeto NovaTech Assistant. APENAS reference servers locais e gratuitos (filesystem, git, memory, everything). Nenhum serviço pago/externo. Least privilege: o filesystem foi dividido em dois servers para separar escopo de ESCRITA (artefatos do projeto) de escopo de LEITURA (fontes de negócio). Ver docs/entrega/dev-2.1-mcp.md para mapeamento, evidência e riscos.",
+  "mcpServers": {
+    "filesystem-project": {
+      "_scope": "READ-WRITE — artefatos que o agente cria/edita (código, specs, skills, prompts).",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "./src",
+        "./specs",
+        "./skills",
+        "./prompts",
+        "./docs/adr"
+      ]
+    },
+    "filesystem-knowledge": {
+      "_scope": "READ-ONLY (intenção). Fontes de negócio e corpus de retrieval. Enforcement real de read-only é feito no SO (ver riscos R1/R3): o reference server concede RW a todo diretório listado.",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "./docs/novatech",
+        "./data/retrieval-corpus"
+      ]
+    },
+    "git": {
+      "_scope": "READ — histórico, diff e branches do repositório local. Requer 'uv'/'uvx' (pipx install uv).",
+      "command": "uvx",
+      "args": ["mcp-server-git", "--repository", "."]
+    },
+    "memory": {
+      "_scope": "Grafo de conhecimento persistente — decisões duráveis (ADRs) e linguagem ubíqua do domínio.",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {
+        "MEMORY_FILE_PATH": "./.mcp/memory/novatech-knowledge-graph.json"
+      }
+    },
+    "everything": {
+      "_scope": "Server de referência para aprendizado das primitivas MCP (tools/resources/prompts). NÃO usar em fluxo de produção.",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-everything"]
+    }
+  }
+}
